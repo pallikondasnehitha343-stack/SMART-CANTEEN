@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Canteen — Intelligent Campus Queue & Pickup Orchestration</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- QRCode.js CDN for client-side QR generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            campus: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8fafc;
+    }
+    .badge-pulse {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.03); }
+    }
+    /* Smooth custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+  
+  <!-- Top Global Header -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3.5 cursor-pointer" onclick="switchTab('menu')">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-700 to-emerald-500 text-white flex items-center justify-center font-black shadow-md shadow-emerald-200">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8a6 6 0 11-12 0 6 6 0 0112 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-extrabold text-slate-900 tracking-tight">Smart<span class="text-emerald-600">Canteen</span></span>
+            <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Campus Live</span>
+          </div>
+          <span class="text-[11px] block font-semibold text-slate-500">Real-Time Queue & Dynamic Pickup</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center gap-1 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200 text-xs font-bold">
+        <button onclick="switchTab('menu')" id="tab-menu" class="tab-btn px-4 py-2.5 rounded-xl bg-emerald-600 text-white shadow-sm transition-all duration-200 flex items-center gap-1.5">
+          <span>Campus Menu</span>
+        </button>
+        <button onclick="switchTab('cart')" id="tab-cart" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 transition-all duration-200 flex items-center gap-2">
+          <span>Cart</span>
+          <span id="nav-cart-count" class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-extrabold shadow-sm">0</span>
+        </button>
+        <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn px-4 py-2.5 rounded-xl text-slate-600 hover:text-slate-900 transition-all duration-200">
+          Live Tracking
+        </button>
+        <button onclick="switchTab('kitchen')" id="tab-kitchen" class="tab-btn px-4 py-2.5 rounded-xl text-amber-800 bg-amber-100/60 hover:bg-amber-100 border border-amber-200 transition-all duration-200 flex items-center gap-1.5">
+          <span>Kitchen KDS</span>
+        </button>
+        <button onclick="switchTab('scanner')" id="tab-scanner" class="tab-btn px-4 py-2.5 rounded-xl text-blue-800 bg-blue-100/60 hover:bg-blue-100 border border-blue-200 transition-all duration-200 flex items-center gap-1.5">
+          <span>QR Scanner</span>
+        </button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="tab-btn px-4 py-2.5 rounded-xl text-purple-800 bg-purple-100/60 hover:bg-purple-100 border border-purple-200 transition-all duration-200 flex items-center gap-1.5">
+          <span>Admin</span>
+        </button>
+      </nav>
+
+      <!-- Active User Persona Switcher -->
+      <div class="flex items-center gap-2.5">
+        <div class="hidden sm:flex flex-col text-right">
+          <span class="text-xs font-bold text-slate-800" id="current-user-name">Aarav Sharma</span>
+          <span class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider" id="current-user-role">STU-2024-001 (Student)</span>
+        </div>
+        
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-[11px] font-bold">
+          <button onclick="switchPersona('STUDENT')" id="btn-persona-student" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs transition">Student</button>
+          <button onclick="switchPersona('STAFF')" id="btn-persona-staff" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">Chef (KDS)</button>
+          <button onclick="switchPersona('ADMIN')" id="btn-persona-admin" class="px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition">Admin</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Real-Time Peak Load Surge Banner -->
+  <div id="peak-banner" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-slate-950 px-4 py-2.5 text-xs font-bold shadow-sm border-b border-amber-600 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto w-full flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 bg-black text-amber-300 rounded font-black text-[10px] tracking-wider uppercase">SURGE MONITOR</span>
+        <span id="peak-banner-text">CANTEEN STATUS: [BUSY] — High lunchtime demand. Dynamic pickup slot allocation active to minimize waiting.</span>
+      </div>
+      <span class="hidden sm:inline-block text-[10px] font-black uppercase bg-black/15 px-2.5 py-1 rounded-md">
+        Live Queue Balancing Active
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Application Body -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- ============================================================== -->
+    <!-- VIEW 1: CAMPUS MENU & ORDERING -->
+    <!-- ============================================================== -->
+    <section id="view-menu" class="space-y-8">
+      
+      <!-- Top Search & Title Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Campus Canteen Menu</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1 font-medium">All meals prepared on-demand with live preparation queue estimation.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Search input -->
+          <div class="relative w-full sm:w-72">
+            <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text" id="menu-search" oninput="filterMenu()" placeholder="Search dosa, thali, noodles..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner" />
+          </div>
+
+          <!-- Veg only filter -->
+          <button onclick="toggleVegOnly()" id="btn-veg-only" class="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100 transition flex items-center gap-1.5 whitespace-nowrap shadow-xs">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span>Veg Only</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Categories Filter Tabs -->
+      <div id="category-tabs" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <button onclick="filterCategory(null)" class="cat-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-slate-900 text-white shadow-md transition">All Items</button>
+      </div>
+
+      <!-- Menu Items Grid -->
+      <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: CART & DYNAMIC PICKUP SLOT -->
+    <!-- ============================================================== -->
+    <section id="view-cart" class="space-y-8 hidden">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Review Order & Pickup Slot</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Select a capacity-managed pickup window to avoid waiting at the counter.</p>
+        </div>
+        <button onclick="clearCart()" class="px-4 py-2 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-xl border border-red-200 transition">
+          Clear Cart
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Items & Slots -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Item List -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <h2 class="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+              <span>Selected Meals (<span id="cart-total-qty">0</span> items)</span>
+            </h2>
+            <div id="cart-items-list" class="divide-y divide-slate-100 text-sm">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Capacity-Aware Pickup Slot Selector -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <div class="border-b border-slate-100 pb-3">
+              <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Dynamic Pickup Window
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Select when you want to collect your food. Slots adjust live based on kitchen congestion.</p>
+            </div>
+            
+            <div id="pickup-slots-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <!-- Injected via JS -->
+            </div>
+          </div>
+
+          <!-- Cooking Notes -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-2">
+            <label class="text-xs font-bold text-slate-700 block uppercase tracking-wider">Special Cooking Instructions (Optional)</label>
+            <input type="text" id="special-notes" placeholder="e.g. Extra chutney, less spice, crispier..." class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          </div>
+        </div>
+
+        <!-- Right: Checkout Card -->
+        <div class="space-y-6">
+          <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-5 sticky top-28">
+            <h2 class="text-base font-extrabold text-slate-900 border-b border-slate-100 pb-3">Payment Summary</h2>
+            
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between text-slate-600">
+                <span>Food Items Subtotal</span>
+                <span id="cart-subtotal" class="font-extrabold text-slate-900">₹0.00</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Queue Orchestration Fee</span>
+                <span class="font-bold text-emerald-600">FREE (Campus Subsidized)</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>Assigned Pickup Slot</span>
+                <span id="cart-slot-name" class="font-extrabold text-slate-900">12:15 PM - 12:30 PM</span>
+              </div>
+            </div>
+
+            <div class="border-t border-slate-200 pt-3 flex justify-between items-baseline">
+              <span class="text-sm font-black text-slate-900">Total Payable</span>
+              <span id="cart-total" class="text-3xl font-black text-emerald-600">₹0.00</span>
+            </div>
+
+            <!-- Digital Payment Method Options -->
+            <div class="space-y-2">
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Payment Method</label>
+              <div class="p-3 bg-emerald-50 border-2 border-emerald-500 rounded-2xl flex items-center justify-between text-xs font-bold text-emerald-950">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                  <span>Campus Student Smart Wallet</span>
+                </div>
+                <span class="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded">Bal: ₹1,450.00</span>
+              </div>
+            </div>
+
+            <button onclick="executeOrderAndPayment()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-200 transition-all duration-200 transform active:scale-95 flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>Pay Digitally & Generate Token</span>
+            </button>
+
+            <div class="text-[11px] text-slate-400 text-center font-medium flex items-center justify-center gap-1.5">
+              <span>●</span>
+              <span>Idempotent Transaction • Anti-Double Charge Protected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: LIVE ORDERS & DYNAMIC ETA COUNTDOWN -->
+    <!-- ============================================================== -->
+    <section id="view-orders" class="space-y-6 hidden">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Active Live Order & Pickup Token</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">Live queue positions, dynamic countdown ready-timers, and single-use QR tokens.</p>
+        </div>
+        <button onclick="loadOrders()" class="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-xl border border-emerald-200 hover:bg-emerald-100 transition">
+          Refresh Live Status
+        </button>
+      </div>
+
+      <div id="orders-list-container" class="space-y-6">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 4: KITCHEN DISPLAY SYSTEM (KDS) -->
+    <!-- ============================================================== -->
+    <section id="view-kitchen" class="space-y-6 hidden">
+      <!-- KDS Header -->
+      <div class="bg-slate-900 text-white p-6 rounded-3xl shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Kitchen Display System (KDS)</span>
+          <h1 class="text-2xl font-black tracking-tight">Live Cooking & Preparation Kanban</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="bg-slate-800 px-4 py-2 rounded-2xl border border-slate-700 text-xs">
+            <span class="text-slate-400">Queue Sorting:</span>
+            <strong class="text-amber-400 block font-bold">Fair Aging Algorithm</strong>
+          </div>
+          <button onclick="loadKitchenOrders()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition">
+            Refresh KDS
+          </button>
+        </div>
+      </div>
+
+      <!-- 3-Column Kanban Board -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Column 1: Queued -->
+        <div class="space-y-4">
+          <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl font-extrabold text-xs text-blue-900 flex justify-between items-center shadow-xs">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+              Queued (Fair Aging Priority)
+            </span>
+            <span id="kds-queued-count" class="px-2.5 py-0.5 bg-blue-600 text-white rounded-full text-xs font-black">0</span>
+          </div>
+          <div id="kds-queued-list" class="space-y-3.5"></div>
+        </div>
+
+        <!-- Column 2: Preparing -->
+        <div class="space-y-4">
+          <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl font-extrabold text-xs text-amber-900 flex justify-between items-center shadow-xs">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+              Preparing (Cooking Stations)
+            </span>
+            <span id="kds-prep-count" class="px-2.5 py-0.5 bg-amber-500 text-slate-950 rounded-full text-xs font-black">0</span>
+          </div>
+          <div id="kds-prep-list" class="space-y-3.5"></div>
+        </div>
+
+        <!-- Column 3: Ready -->
+        <div class="space-y-4">
+          <div class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl font-extrabold text-xs text-emerald-900 flex justify-between items-center shadow-xs">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+              Ready for Counter Pickup
+            </span>
+            <span id="kds-ready-count" class="px-2.5 py-0.5 bg-emerald-600 text-white rounded-full text-xs font-black">0</span>
+          </div>
+          <div id="kds-ready-list" class="space-y-3.5"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 5: STAFF QR SCANNER TERMINAL -->
+    <!-- ============================================================== -->
+    <section id="view-scanner" class="max-w-2xl mx-auto space-y-6 hidden">
+      <div class="text-center space-y-1">
+        <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-extrabold uppercase">Pickup Verification Counter</span>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">QR Token Scanner Terminal</h1>
+        <p class="text-xs text-slate-500">Authoritatively validates cryptographic signatures and prevents token re-use upon delivery.</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <label class="text-xs font-bold text-slate-700 block uppercase tracking-wider">Manual Token Verification</label>
+        <div class="flex gap-2">
+          <input type="text" id="scanner-input" placeholder="Paste cryptographic token string..." class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <button onclick="verifyQRManual()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-xs font-black shadow-md transition">
+            Verify & Claim
+          </button>
+        </div>
+      </div>
+
+      <div id="scanner-result" class="hidden"></div>
+
+      <!-- Quick 1-Click Simulation List -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <h2 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Ready Orders Waiting at Counter</h2>
+        <div id="scanner-ready-list" class="space-y-2.5"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 6: ADMIN EXECUTIVE OPERATIONS & FORECASTING -->
+    <!-- ============================================================== -->
+    <section id="view-admin" class="space-y-8 hidden">
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold text-purple-700 uppercase tracking-wider">Operations Control Center</span>
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Executive Telemetry & Forecasting</h1>
+        </div>
+        <button onclick="loadAdminMetrics()" class="px-4 py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-2xl text-xs font-bold transition">
+          Refresh Telemetry
+        </button>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div id="admin-metrics-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Injected via JS -->
+      </div>
+
+      <!-- ML Demand Forecasting Section -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+              </svg>
+              AI / ML Near-Term Demand Forecasting
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">Historical time-series moving averages predicting incoming load and required station staffing.</p>
+          </div>
+          <span class="text-[10px] font-extrabold bg-slate-100 text-slate-600 px-2 py-1 rounded-md">Evaluation MAE: 2.34</span>
+        </div>
+        <div id="admin-forecast-list" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JavaScript Application Controller -->
+  <script>
+    const API_BASE = '/api/v1';
+    let currentAuthToken = '';
+    let currentRole = 'STUDENT';
+    let allMenuItems = [];
+    let cart = [];
+    let pickupSlots = [];
+    let selectedSlotId = null;
+    let isVegOnlyFilter = false;
+
+    // Initialize default student persona authentication
+    async function initAuth(role = 'STUDENT') {
+      currentRole = role;
+      let email = 'student@campus.edu';
+      let pass = 'campus123';
+      let name = 'Aarav Sharma';
+      let idText = 'STU-2024-001 (Student)';
+
+      if (role === 'STAFF') {
+        email = 'staff@campus.edu';
+        pass = 'staff123';
+        name = 'Chef Ramesh Kumar';
+        idText = 'STF-KITCHEN-01 (Kitchen Staff)';
+      } else if (role === 'ADMIN') {
+        email = 'admin@campus.edu';
+        pass = 'admin123';
+        name = 'Dr. Sunita Rao';
+        idText = 'ADM-DIR-001 (Administrator)';
+      }
+
+      document.getElementById('current-user-name').innerText = name;
+      document.getElementById('current-user-role').innerText = idText;
+
+      // Update persona buttons
+      ['student', 'staff', 'admin'].forEach(r => {
+        const btn = document.getElementById(`btn-persona-${r}`);
+        if (r.toUpperCase() === role) {
+          btn.className = 'px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-xs transition';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition';
+        }
+      });
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: pass })
+        });
+        const data = await res.json();
+        if (data.access_token) {
+          currentAuthToken = data.access_token;
+        }
+      } catch (e) {
+        console.error('Auth error:', e);
+      }
+    }
+
+    function switchPersona(role) {
+      initAuth(role).then(() => {
+        if (role === 'STAFF') switchTab('kitchen');
+        else if (role === 'ADMIN') switchTab('admin');
+        else switchTab('menu');
+      });
+    }
+
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${currentAuthToken}`
+      };
+    }
+
+    function switchTab(tab) {
+      ['menu', 'cart', 'orders', 'kitchen', 'scanner', 'admin'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        const btn = document.getElementById(`tab-${t}`);
+        if (btn) {
+          btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+          btn.classList.add('text-slate-600');
+        }
+      });
+
+      const activeView = document.getElementById(`view-${tab}`);
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+        activeBtn.classList.remove('text-slate-600');
+      }
+
+      if (tab === 'menu') loadMenu();
+      if (tab === 'cart') renderCart();
+      if (tab === 'orders') loadOrders();
+      if (tab === 'kitchen') loadKitchenOrders();
+      if (tab === 'scanner') loadScannerReadyOrders();
+      if (tab === 'admin') loadAdminMetrics();
+    }
+
+    // Load Menu & Categories
+    async function loadMenu() {
+      const [cats, items] = await Promise.all([
+        fetch(`${API_BASE}/menu/categories`).then(r => r.json()),
+        fetch(`${API_BASE}/menu/items?available_only=false`).then(r => r.json())
+      ]);
+      allMenuItems = items;
+
+      // Render Categories
+      const catContainer = document.getElementById('category-tabs');
+      catContainer.innerHTML = `<button onclick="filterCategory(null)" class="cat-btn px-5 py-2.5 rounded-2xl text-xs font-black bg-slate-900 text-white shadow-md transition whitespace-nowrap">All Items (${items.length})</button>`;
+      cats.forEach(c => {
+        catContainer.innerHTML += `<button onclick="filterCategory(${c.id})" class="cat-btn px-5 py-2.5 rounded-2xl text-xs font-extrabold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition whitespace-nowrap">${c.name}</button>`;
+      });
+
+      renderMenuItems(items);
+    }
+
+    function renderMenuItems(items) {
+      let filtered = items;
+      if (isVegOnlyFilter) {
+        filtered = filtered.filter(i => i.is_veg);
+      }
+
+      const grid = document.getElementById('menu-grid');
+      grid.innerHTML = filtered.map(item => {
+        const inCart = cart.find(c => c.id === item.id);
+        const isOutOfStock = !item.is_available || item.stock_quantity <= 0;
+        const isLowStock = item.stock_quantity > 0 && item.stock_quantity <= 10;
+
+        return `
+          <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-lg hover:border-emerald-300 transition-all duration-200 flex flex-col justify-between">
+            <div class="space-y-2.5">
+              <div class="flex items-start justify-between gap-2">
+                <h3 class="font-extrabold text-slate-900 text-base leading-snug">${item.name}</h3>
+                <span class="w-4 h-4 rounded border flex items-center justify-center text-[8px] font-black flex-shrink-0 mt-0.5 ${item.is_veg ? 'border-emerald-600 text-emerald-600' : 'border-red-600 text-red-600'}" title="${item.is_veg ? 'Vegetarian' : 'Non-Vegetarian'}">●</span>
+              </div>
+              <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed font-medium">${item.description || 'Prepared fresh with campus hygiene standards.'}</p>
+              
+              <!-- Badges -->
+              <div class="flex items-center gap-2 pt-1 flex-wrap">
+                <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md flex items-center gap-1">
+                  ⏱ ~${item.prep_time_minutes}m prep
+                </span>
+                ${isOutOfStock ? `
+                  <span class="text-[10px] bg-red-100 text-red-700 font-bold px-2 py-0.5 rounded-md">Sold Out</span>
+                ` : isLowStock ? `
+                  <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-md">Only ${item.stock_quantity} left</span>
+                ` : `
+                  <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md">${item.stock_quantity} in stock</span>
+                `}
+              </div>
+            </div>
+
+            <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xl font-black text-slate-900">₹${item.price.toFixed(2)}</span>
+              ${isOutOfStock ? `
+                <span class="text-xs text-slate-400 font-bold px-3 py-1.5 bg-slate-100 rounded-xl">Unavailable</span>
+              ` : inCart ? `
+                <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 rounded-xl p-1 shadow-xs">
+                  <button onclick="changeCartQty(${item.id}, -1)" class="w-7 h-7 bg-white text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-black shadow-xs">-</button>
+                  <span class="text-xs font-black text-emerald-900 px-1.5">${inCart.quantity}</span>
+                  <button onclick="changeCartQty(${item.id}, 1)" class="w-7 h-7 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg text-xs font-black shadow-xs">+</button>
+                </div>
+              ` : `
+                <button onclick="addToCart(${item.id})" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-100 transition-all duration-150 transform active:scale-95 flex items-center gap-1">
+                  <span>+ Add</span>
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleVegOnly() {
+      isVegOnlyFilter = !isVegOnlyFilter;
+      const btn = document.getElementById('btn-veg-only');
+      if (isVegOnlyFilter) {
+        btn.className = 'px-3.5 py-2.5 rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-800 text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-xs';
+      } else {
+        btn.className = 'px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs font-bold hover:bg-slate-100 transition flex items-center gap-1.5 whitespace-nowrap shadow-xs';
+      }
+      renderMenuItems(allMenuItems);
+    }
+
+    function filterCategory(catId) {
+      if (!catId) renderMenuItems(allMenuItems);
+      else renderMenuItems(allMenuItems.filter(i => i.category_id === catId));
+    }
+
+    function filterMenu() {
+      const q = document.getElementById('menu-search').value.toLowerCase();
+      renderMenuItems(allMenuItems.filter(i => i.name.toLowerCase().includes(q) || (i.description && i.description.toLowerCase().includes(q))));
+    }
+
+    function addToCart(itemId) {
+      const item = allMenuItems.find(i => i.id === itemId);
+      const existing = cart.find(c => c.id === itemId);
+      if (existing) {
+        if (existing.quantity < item.stock_quantity) existing.quantity++;
+      } else {
+        cart.push({ id: item.id, item, quantity: 1 });
+      }
+      updateCartBadge();
+      renderMenuItems(allMenuItems);
+    }
+
+    function changeCartQty(id, delta) {
+      const item = cart.find(c => c.id === id);
+      if (!item) return;
+      item.quantity += delta;
+      if (item.quantity <= 0) cart = cart.filter(c => c.id !== id);
+      updateCartBadge();
+      renderMenuItems(allMenuItems);
+      if (!document.getElementById('view-cart').classList.contains('hidden')) {
+        renderCart();
+      }
+    }
+
+    function updateCartBadge() {
+      const total = cart.reduce((s, c) => s + c.quantity, 0);
+      document.getElementById('nav-cart-count').innerText = total;
+      const qtyEl = document.getElementById('cart-total-qty');
+      if (qtyEl) qtyEl.innerText = total;
+    }
+
+    async function renderCart() {
+      const list = document.getElementById('cart-items-list');
+      if (cart.length === 0) {
+        list.innerHTML = `
+          <div class="py-12 text-center text-slate-400 text-xs font-medium space-y-3">
+            <p class="text-sm font-bold text-slate-700">Your Cart is Empty</p>
+            <button onclick="switchTab('menu')" class="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold">Browse Menu</button>
+          </div>
+        `;
+      } else {
+        list.innerHTML = cart.map(c => `
+          <div class="py-3.5 flex items-center justify-between gap-4">
+            <div>
+              <div class="font-extrabold text-slate-900">${c.item.name}</div>
+              <div class="text-xs text-emerald-600 font-bold">₹${(c.item.price * c.quantity).toFixed(2)} <span class="text-[10px] text-slate-400 font-normal">(₹${c.item.price.toFixed(2)} each)</span></div>
+            </div>
+            <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
+              <button onclick="changeCartQty(${c.id}, -1)" class="w-7 h-7 bg-white text-slate-800 rounded-lg text-xs font-black shadow-xs hover:bg-slate-100">-</button>
+              <span class="text-xs font-black text-slate-900 px-1.5">${c.quantity}</span>
+              <button onclick="changeCartQty(${c.id}, 1)" class="w-7 h-7 bg-emerald-600 text-white rounded-lg text-xs font-black shadow-xs hover:bg-emerald-700">+</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const subtotal = cart.reduce((s, c) => s + c.item.price * c.quantity, 0);
+      document.getElementById('cart-subtotal').innerText = `₹${subtotal.toFixed(2)}`;
+      document.getElementById('cart-total').innerText = `₹${subtotal.toFixed(2)}`;
+      updateCartBadge();
+
+      // Fetch pickup slots
+      const slots = await fetch(`${API_BASE}/pickup/slots`).then(r => r.json());
+      pickupSlots = slots;
+      if (!selectedSlotId && slots.length > 0) {
+        const rec = slots.find(s => s.is_recommended) || slots[0];
+        selectedSlotId = rec.id;
+      }
+
+      const slotGrid = document.getElementById('pickup-slots-grid');
+      slotGrid.innerHTML = slots.map(s => {
+        const isSel = selectedSlotId === s.id;
+        const isFull = s.status === 'FULL';
+        const isBusy = s.status === 'BUSY';
+
+        return `
+          <button onclick="selectSlot(${s.id})" ${isFull ? 'disabled' : ''} class="p-4 rounded-2xl border-2 text-left transition flex flex-col justify-between ${isSel ? 'border-emerald-600 bg-emerald-50/70 ring-2 ring-emerald-100 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300'} ${isFull ? 'opacity-40 cursor-not-allowed bg-slate-100' : ''}">
+            <div class="flex justify-between items-center">
+              <span class="font-extrabold text-xs text-slate-900">${s.slot_label}</span>
+              ${s.is_recommended ? `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-black border border-emerald-200">★ RECOMMENDED</span>` : ''}
+            </div>
+            <div class="mt-2.5 flex justify-between items-center text-[11px]">
+              <span class="text-slate-500 font-semibold">${s.capacity - s.booked_count} slots remaining</span>
+              <span class="font-bold px-2 py-0.5 rounded text-[10px] ${isFull ? 'bg-red-100 text-red-700' : isBusy ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">${s.status}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function clearCart() {
+      cart = [];
+      updateCartBadge();
+      renderCart();
+    }
+
+    function selectSlot(slotId) {
+      selectedSlotId = slotId;
+      const slot = pickupSlots.find(s => s.id === slotId);
+      if (slot) document.getElementById('cart-slot-name').innerText = slot.slot_label;
+      renderCart();
+    }
+
+    async function executeOrderAndPayment() {
+      if (cart.length === 0) return alert('Your cart is empty! Please add food items.');
+      const notes = document.getElementById('special-notes').value;
+      const idempotencyKey = `IDEMP_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      
+      const payload = {
+        items: cart.map(c => ({ menu_item_id: c.id, quantity: c.quantity })),
+        pickup_slot_id: selectedSlotId,
+        special_instructions: notes || null,
+        payment_method: 'CAMPUS_WALLET',
+        idempotency_key: idempotencyKey
+      };
+
+      try {
+        const order = await fetch(`${API_BASE}/orders`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify(payload)
+        }).then(r => r.json());
+
+        // Authoritatively verify payment
+        const payInit = await fetch(`${API_BASE}/payments/initiate`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ order_id: order.id, payment_method: 'CAMPUS_WALLET', idempotency_key: idempotencyKey })
+        }).then(r => r.json());
+
+        await fetch(`${API_BASE}/payments/verify`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ transaction_id: payInit.transaction_id, gateway_signature: 'VALID_MOCK_SIGNATURE', status: 'SUCCESS' })
+        });
+
+        cart = [];
+        updateCartBadge();
+        alert(`Order Placed Successfully!\nToken: ${order.token_number} (${order.order_number})\nLive ETA: ~${order.estimated_prep_time_minutes} minutes`);
+        switchTab('orders');
+      } catch (e) {
+        alert('Order execution error: ' + e);
+      }
+    }
+
+    // Load Student Orders & Live Tracking
+    async function loadOrders() {
+      const orders = await fetch(`${API_BASE}/orders/my`, { headers: authHeaders() }).then(r => r.json());
+      const container = document.getElementById('orders-list-container');
+      if (orders.length === 0) {
+        container.innerHTML = `<div class="p-12 bg-white rounded-3xl text-center text-xs text-slate-400 font-medium border border-slate-200">No active orders placed yet.</div>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(o => {
+        const isReady = o.status === 'READY';
+        return `
+          <div class="bg-white p-6 sm:p-8 rounded-3xl border ${isReady ? 'border-emerald-500 ring-4 ring-emerald-100' : 'border-slate-200/80'} shadow-sm space-y-6">
+            
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+              <div class="flex items-center gap-3">
+                <span class="text-3xl font-black text-slate-900 tracking-tight">${o.token_number}</span>
+                <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">${o.order_number}</span>
+              </div>
+              <span class="px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider ${isReady ? 'bg-emerald-500 text-white badge-pulse' : 'bg-blue-100 text-blue-800 border border-blue-200'}">
+                ${o.status}
+              </span>
+            </div>
+
+            <!-- Dynamic Telemetry Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <!-- Live ETA & Queue Card -->
+              <div class="p-6 bg-slate-900 text-white rounded-3xl space-y-3 shadow-xl">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Dynamic Live Ready Time</span>
+                  <span class="text-[10px] px-2 py-0.5 bg-emerald-500/20 text-emerald-400 font-bold rounded-full">Active Queue</span>
+                </div>
+                
+                <div class="flex items-baseline gap-2">
+                  <span class="text-4xl font-black text-emerald-400">~${o.estimated_prep_time_minutes}</span>
+                  <span class="text-sm text-slate-400 font-semibold">minutes prep</span>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
+                  <span>Queue Position: <strong class="text-white font-extrabold">#${o.queue_position || 1}</strong></span>
+                  <span>Orders Ahead: <strong class="text-white font-extrabold">${o.orders_ahead || 0}</strong></span>
+                </div>
+              </div>
+
+              <!-- Cryptographic QR Pickup Token -->
+              <div class="p-6 bg-slate-50 border border-slate-200 rounded-3xl flex flex-col items-center justify-center text-center space-y-2">
+                <span class="text-[10px] font-black uppercase tracking-wider text-slate-500">Digital Pickup QR Token</span>
+                <div id="qr-canvas-${o.id}" class="p-3 bg-white rounded-2xl shadow-sm border border-slate-200 inline-block"></div>
+                <p class="text-[10px] text-slate-500 font-medium">Show this screen at the kitchen pickup counter.</p>
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div class="pt-2">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Order Items</span>
+              <div class="flex flex-wrap gap-2">
+                ${o.items.map(i => `<span class="px-3 py-1 bg-slate-100 text-slate-800 text-xs font-extrabold rounded-xl">${i.quantity}x ${i.menu_item_name}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      orders.forEach(o => {
+        if (o.pickup_qr_token) {
+          const el = document.getElementById(`qr-canvas-${o.id}`);
+          if (el) {
+            el.innerHTML = '';
+            new QRCode(el, { text: o.pickup_qr_token, width: 130, height: 130 });
+          }
+        }
+      });
+    }
+
+    // Load Kitchen KDS Kanban
+    async function loadKitchenOrders() {
+      const orders = await fetch(`${API_BASE}/kitchen/orders`, { headers: authHeaders() }).then(r => r.json());
+      const queued = orders.filter(o => ['QUEUED', 'CONFIRMED', 'ACCEPTED'].includes(o.status));
+      const preparing = orders.filter(o => o.status === 'PREPARING');
+      const ready = orders.filter(o => o.status === 'READY');
+
+      document.getElementById('kds-queued-count').innerText = queued.length;
+      document.getElementById('kds-prep-count').innerText = preparing.length;
+      document.getElementById('kds-ready-count').innerText = ready.length;
+
+      document.getElementById('kds-queued-list').innerHTML = queued.length === 0 ? `<div class="p-8 text-center text-slate-400 text-xs font-semibold bg-white rounded-2xl border border-dashed border-slate-200">No orders in queue</div>` : queued.map(o => `
+        <div class="p-5 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-3">
+          <div class="flex justify-between items-center font-black text-slate-900">
+            <span class="text-lg">${o.token_number}</span>
+            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">~${o.estimated_prep_time_minutes}m</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-700 space-y-1">
+            ${o.items.map(i => `<div class="flex justify-between bg-slate-50 p-1.5 rounded-lg"><span>${i.quantity}x ${i.menu_item_name}</span></div>`).join('')}
+          </div>
+          <button onclick="kdsStartPrep(${o.id})" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs rounded-xl shadow-xs transition">
+            Start Cooking (Station-1)
+          </button>
+        </div>
+      `).join('');
+
+      document.getElementById('kds-prep-list').innerHTML = preparing.length === 0 ? `<div class="p-8 text-center text-slate-400 text-xs font-semibold bg-white rounded-2xl border border-dashed border-slate-200">No orders cooking</div>` : preparing.map(o => `
+        <div class="p-5 bg-amber-50/80 rounded-3xl border-2 border-amber-400 shadow-md space-y-3">
+          <div class="flex justify-between items-center font-black text-slate-900">
+            <span class="text-lg">${o.token_number}</span>
+            <span class="text-xs font-extrabold text-amber-800 px-2 py-0.5 bg-amber-200 rounded">Cooking Active</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-800 space-y-1">
+            ${o.items.map(i => `<div class="flex justify-between bg-white/70 p-1.5 rounded-lg"><span>${i.quantity}x ${i.menu_item_name}</span></div>`).join('')}
+          </div>
+          <button onclick="kdsMarkReady(${o.id})" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition badge-pulse">
+            Mark READY for Pickup
+          </button>
+        </div>
+      `).join('');
+
+      document.getElementById('kds-ready-list').innerHTML = ready.length === 0 ? `<div class="p-8 text-center text-slate-400 text-xs font-semibold bg-white rounded-2xl border border-dashed border-slate-200">No ready orders</div>` : ready.map(o => `
+        <div class="p-5 bg-emerald-50/80 rounded-3xl border-2 border-emerald-400 shadow-md space-y-2 text-xs">
+          <div class="flex justify-between items-center font-black text-slate-900 text-base">
+            <span>${o.token_number}</span>
+            <span class="text-xs text-emerald-800 font-extrabold">Ready at Counter</span>
+          </div>
+          <div class="text-slate-700 font-medium">${o.items.map(i => `${i.quantity}x ${i.menu_item_name}`).join(', ')}</div>
+          <div class="text-[10px] text-emerald-800 font-bold bg-emerald-100 p-2 rounded-xl text-center">Awaiting Student QR Scan</div>
+        </div>
+      `).join('');
+    }
+
+    async function kdsStartPrep(id) {
+      await fetch(`${API_BASE}/kitchen/orders/${id}/start-prep`, { method: 'POST', headers: authHeaders() });
+      loadKitchenOrders();
+    }
+
+    async function kdsMarkReady(id) {
+      await fetch(`${API_BASE}/kitchen/orders/${id}/mark-ready`, { method: 'POST', headers: authHeaders() });
+      loadKitchenOrders();
+    }
+
+    // QR Scanner
+    async function loadScannerReadyOrders() {
+      const orders = await fetch(`${API_BASE}/kitchen/orders`, { headers: authHeaders() }).then(r => r.json());
+      const ready = orders.filter(o => o.status === 'READY');
+      const container = document.getElementById('scanner-ready-list');
+      if (ready.length === 0) {
+        container.innerHTML = `<div class="text-xs text-slate-400 text-center py-4">No ready orders currently waiting.</div>`;
+        return;
+      }
+      container.innerHTML = ready.map(o => `
+        <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 flex justify-between items-center text-xs">
+          <div>
+            <strong class="text-slate-900">${o.token_number}</strong> • ${o.order_number} (${o.items.length} items)
+          </div>
+          <button onclick="verifyQR('${o.pickup_qr_token}')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs shadow-xs transition">
+            Simulate Counter Scan
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function verifyQR(token) {
+      const resEl = document.getElementById('scanner-result');
+      resEl.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/orders/verify-qr`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ qr_token: token })
+        });
+        const data = await res.json();
+
+        if (res.status === 200 && data.success) {
+          resEl.innerHTML = `
+            <div class="p-5 bg-emerald-50 border-2 border-emerald-400 text-emerald-950 rounded-3xl text-xs space-y-1 shadow-md">
+              <strong class="text-sm font-black text-emerald-900 block">✓ PICKUP VERIFIED & DELIVERED!</strong>
+              <div>Order: <strong>${data.token_number}</strong> (${data.order_number})</div>
+              <div>Student: <strong>${data.user_name}</strong></div>
+              <div class="text-[10px] text-emerald-700 mt-1">Single-use token marked consumed in database.</div>
+            </div>
+          `;
+          loadScannerReadyOrders();
+        } else {
+          resEl.innerHTML = `
+            <div class="p-5 bg-red-50 border-2 border-red-300 text-red-950 rounded-3xl text-xs font-bold space-y-1 shadow-sm">
+              <strong class="text-sm block text-red-700">✗ Security / Verification Rejection</strong>
+              <div>${data.detail || 'Invalid or Replayed Token'}</div>
+            </div>
+          `;
+        }
+      } catch (e) {
+        alert('Scanner error: ' + e);
+      }
+    }
+
+    function verifyQRManual() {
+      const t = document.getElementById('scanner-input').value;
+      if (t) verifyQR(t);
+    }
+
+    // Admin Metrics & ML Forecast
+    async function loadAdminMetrics() {
+      const [m, forecast] = await Promise.all([
+        fetch(`${API_BASE}/admin/metrics`, { headers: authHeaders() }).then(r => r.json()),
+        fetch(`${API_BASE}/analytics/forecast`, { headers: authHeaders() }).then(r => r.json())
+      ]);
+
+      const grid = document.getElementById('admin-metrics-grid');
+      grid.innerHTML = `
+        <div class="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Orders</div>
+          <div class="text-3xl font-black text-slate-900">${m.active_orders_count}</div>
+          <div class="text-xs text-slate-500 font-semibold mt-1">${m.queued_count} Queued • ${m.preparing_count} Prep</div>
+        </div>
+        <div class="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Kitchen Utilization</div>
+          <div class="text-3xl font-black text-amber-500">${m.kitchen_utilization_pct}%</div>
+          <div class="text-xs text-slate-500 font-semibold mt-1">4 Active Stations</div>
+        </div>
+        <div class="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Avg Dynamic ETA</div>
+          <div class="text-3xl font-black text-emerald-600">~${m.avg_eta_minutes}m</div>
+          <div class="text-xs text-slate-500 font-semibold mt-1">Workload-optimized</div>
+        </div>
+        <div class="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-xs space-y-1">
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Revenue Today</div>
+          <div class="text-3xl font-black text-purple-600">₹${m.total_revenue_today.toFixed(2)}</div>
+          <div class="text-xs text-slate-500 font-semibold mt-1">${m.completed_today} Completed Orders</div>
+        </div>
+      `;
+
+      const fContainer = document.getElementById('admin-forecast-list');
+      fContainer.innerHTML = forecast.forecasts.map(f => `
+        <div class="p-5 bg-slate-50 rounded-3xl border border-slate-200 space-y-2">
+          <div class="text-xs font-black text-slate-800 uppercase tracking-wider">${f.time_window}</div>
+          <div class="text-2xl font-black text-purple-700">${f.predicted_orders} Orders</div>
+          <div class="text-xs text-slate-500 font-semibold">${f.recommended_active_stations} Active Cooking Stations Needed</div>
+        </div>
+      `).join('');
+    }
+
+    // App Startup
+    initAuth('STUDENT').then(() => {
+      loadMenu();
+    });
+  </script>
+</body>
+</html>

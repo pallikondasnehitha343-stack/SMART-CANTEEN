@@ -1,0 +1,1764 @@
+# PROJECT EXECUTION COMMAND
+
+You are the autonomous senior engineering team responsible for designing, implementing, testing, validating, hardening, and documenting the following real-world B.Tech software project:
+
+# SMART CANTEEN — ONLINE ORDERING AND REAL-TIME QUEUE MANAGEMENT SYSTEM
+
+You are operating as a Principal Software Architect, Product Engineer, Frontend Architect, Backend Architect, Database Architect, Security Engineer, DevOps/SRE Engineer, QA Engineer, UX Engineer, AI/ML Engineer, and technical project reviewer.
+
+Do not merely produce a plan. Inspect the repository, reconstruct the actual state, implement the system, test it, debug failures, and provide evidence of completion.
+
+The project must be treated as a real campus software product rather than a simple CRUD college demonstration.
+
+---
+
+# 1. EXECUTION ROLE
+
+Operate using this loop:
+
+RECONSTRUCT
+→ AUDIT
+→ UNDERSTAND
+→ GAP ANALYSIS
+→ ARCHITECT
+→ PLAN
+→ IMPLEMENT
+→ INTEGRATE
+→ TEST
+→ DEBUG
+→ HARDEN
+→ VERIFY
+→ DOCUMENT
+→ FINAL AUDIT
+
+Never declare completion merely because files exist or the application starts.
+
+A feature is complete only when it is:
+
+IMPLEMENTED
+
+* INTEGRATED
+* TESTED
+* VERIFIED
+
+Do not invent APIs, database structures, credentials, integrations, completed features, test results, performance measurements, or deployment status.
+
+When something is unknown, explicitly mark it:
+
+VERIFY FROM REPOSITORY
+
+or:
+
+DECISION REQUIRED
+
+---
+
+# 2. PROJECT IDENTITY
+
+## Project Name
+
+Smart Canteen Online Ordering and Real-Time Queue Management System
+
+## Recommended technical positioning
+
+Intelligent Campus Canteen Management System with Real-Time Queue Optimization and Dynamic Pickup Scheduling
+
+Do not describe this as the world's first smart canteen or first online canteen system.
+
+Existing research and open-source systems already demonstrate online ordering, digital tokens, payments, real-time tracking, pickup scheduling, kitchen displays, QR pickup, demand management, and queue management.
+
+The project's differentiation must therefore come from the integration and operational intelligence of the proposed system.
+
+---
+
+# 3. PROJECT OBJECTIVE
+
+Build a campus-focused real-time canteen platform that reduces:
+
+* physical ordering queues
+* pickup waiting time
+* peak-hour crowding
+* manual order management
+* payment-related delays
+* food availability uncertainty
+* kitchen overload
+* inefficient order prioritization
+
+The system must integrate:
+
+1. online ordering
+2. digital payments
+3. real-time order status
+4. virtual queue management
+5. dynamic pickup-slot allocation
+6. dynamic ETA estimation
+7. kitchen workload management
+8. inventory awareness
+9. QR-based pickup verification
+10. peak-period detection
+11. operational analytics
+12. optional demand forecasting
+
+The central technical idea is:
+
+# REAL-TIME CANTEEN ORCHESTRATION
+
+The system should not merely digitize ordering.
+
+It should continuously understand:
+
+* current orders
+* kitchen workload
+* preparation times
+* queue length
+* pickup capacity
+* inventory
+* expected demand
+* payment state
+* pickup congestion
+
+and use those signals to improve the next operational decision.
+
+---
+
+# 4. BUSINESS CONTEXT
+
+The target environment is a college/university canteen.
+
+Primary users:
+
+### Students
+
+Students should be able to:
+
+* view available food
+* see prices
+* see availability
+* place orders
+* select quantities
+* pay digitally
+* receive a digital token
+* receive an estimated ready time
+* monitor order status
+* receive ready notifications
+* obtain a QR pickup token
+* collect food without standing in the ordering queue
+* view order history
+* provide feedback
+
+### Kitchen/Canteen Staff
+
+Staff should be able to:
+
+* see incoming orders
+* accept orders
+* see preparation priority
+* change order status
+* monitor workload
+* mark orders ready
+* verify pickup
+* manage inventory
+* identify peak periods
+
+### Administrator
+
+Administrators should be able to:
+
+* manage menu
+* manage prices
+* manage inventory
+* manage staff
+* monitor orders
+* monitor payments
+* configure pickup capacity
+* view queue statistics
+* view peak-hour analytics
+* inspect operational bottlenecks
+* view reports
+
+---
+
+# 5. CORE PROBLEMS TO SOLVE
+
+## Problem 1 — Long physical queues
+
+Students currently waste time standing in line to place orders.
+
+### Required solution
+
+Online ordering + digital queue + scheduled pickup.
+
+The system should separate:
+
+ORDERING QUEUE
+
+from:
+
+FOOD PREPARATION QUEUE
+
+and:
+
+PICKUP QUEUE.
+
+---
+
+## Problem 2 — Food preparation/pickup waiting
+
+Students often do not know when their food will actually be ready.
+
+### Required solution
+
+Provide live:
+
+* order status
+* orders ahead
+* kitchen workload
+* estimated preparation time
+* estimated ready time
+* pickup window
+
+ETA must update when operational conditions change.
+
+---
+
+## Problem 3 — Peak-time crowd
+
+Campus breaks can create sudden demand spikes.
+
+The system must detect and respond to congestion.
+
+Example:
+
+CURRENT:
+
+* 48 active orders
+* kitchen capacity = 25
+* workload = HIGH
+
+The system should not blindly accept unlimited orders.
+
+It should intelligently manage:
+
+* pickup slots
+* capacity
+* expected preparation time
+* order admission
+* user recommendations
+
+Example:
+
+12:30–12:40 → FULL
+12:40–12:50 → HIGH
+12:50–1:00 → AVAILABLE
+1:00–1:10 → LOW
+
+The user should receive an intelligent pickup recommendation.
+
+---
+
+## Problem 4 — Payment problems
+
+Payment must be treated as a reliable backend workflow, not merely a frontend button.
+
+Support payment states such as:
+
+INITIATED
+PROCESSING
+SUCCESS
+FAILED
+PENDING
+TIMEOUT
+CANCELLED
+REFUNDED
+
+Never confirm an order solely because the frontend reports success.
+
+Payment confirmation must be verified through the authoritative payment mechanism available to the project.
+
+Implement idempotency where necessary to prevent:
+
+PAY → PAY
+
+from creating duplicate orders.
+
+---
+
+## Problem 5 — Manual management
+
+Replace manual workflows with dedicated operational interfaces.
+
+Student:
+
+ORDER → PAY → TRACK → PICKUP
+
+Kitchen:
+
+RECEIVE → ACCEPT → PREPARE → READY
+
+Pickup:
+
+READY → QR VERIFY → COLLECTED
+
+Admin:
+
+MONITOR → ANALYZE → CONTROL → REPORT
+
+---
+
+# 6. IMPORTANT EXISTING-SYSTEM RESEARCH
+
+The implementation team must recognize that the basic concept already exists.
+
+Research reviewed for this project includes:
+
+* SPOON smart canteen research
+* CampoBite
+* Eatsy campus cafeteria systems
+* LINE BUDDY
+* Smart Canteen load-balancing research
+* CanteenConnect
+* CampusEats
+* open-source Smart Canteen implementations
+* commercial restaurant platforms such as Toast
+
+Existing systems demonstrate combinations of:
+
+* online ordering
+* digital tokens
+* queue management
+* real-time tracking
+* payment
+* QR pickup
+* kitchen displays
+* pickup slots
+* demand management
+* analytics
+* concurrency controls
+
+Therefore:
+
+DO NOT IMPLEMENT A BASIC CLONE.
+
+DO NOT CLAIM BASIC ONLINE ORDERING AS NOVELTY.
+
+DO NOT CLAIM THAT VIRTUAL QUEUES HAVE NEVER BEEN IMPLEMENTED.
+
+Instead, build a stronger integrated operational system.
+
+---
+
+# 7. PROJECT RESEARCH GAP / DIFFERENTIATION
+
+The project should focus on the following engineering gap:
+
+Existing systems often digitize individual functions such as ordering, payments, tokens, tracking, or queue management.
+
+This project should treat the canteen as a real-time capacity-constrained service system.
+
+The proposed architecture should integrate:
+
+LIVE KITCHEN WORKLOAD
++
+PICKUP CAPACITY
++
+QUEUE STATE
++
+INVENTORY
++
+PAYMENT STATE
++
+DEMAND
++
+PREPARATION TIME
+
+into a continuous decision-making loop.
+
+Conceptual flow:
+
+HISTORICAL DATA
+↓
+DEMAND PREDICTION
+↓
+CAPACITY PLANNING
+↓
+DYNAMIC PICKUP SLOTS
+↓
+ONLINE ORDER
+↓
+QUEUE OPTIMIZATION
+↓
+KITCHEN WORKLOAD
+↓
+LIVE ETA
+↓
+READY NOTIFICATION
+↓
+QR PICKUP
+↓
+ACTUAL PERFORMANCE DATA
+↓
+MODEL/ANALYTICS UPDATE
+
+This is the primary technical differentiation.
+
+---
+
+# 8. MANDATORY TECHNOLOGY BASELINE
+
+Unless an existing repository contains a deliberate, technically justified alternative, use:
+
+## Frontend
+
+Next.js + TypeScript
+
+Prefer App Router unless repository constraints justify otherwise.
+
+Use TypeScript-first implementation.
+
+## Backend
+
+Python.
+
+Preferred framework:
+
+FastAPI
+
+unless repository inspection proves that Django, Flask, or another Python framework is more appropriate.
+
+Python is the authoritative business-logic backend.
+
+## Database
+
+Supabase + PostgreSQL.
+
+PostgreSQL is the authoritative relational datastore.
+
+Use:
+
+* migrations
+* foreign keys
+* constraints
+* indexes
+* transactions
+* appropriate RLS
+* database integrity
+* reproducible schema changes
+
+## Real-time
+
+Use WebSockets or an equivalent appropriate real-time mechanism for:
+
+* order status
+* queue position
+* kitchen state
+* ETA updates
+* pickup availability
+
+Do not introduce unnecessary technologies.
+
+---
+
+# 9. ARCHITECTURAL BOUNDARIES
+
+Preferred architecture:
+
+USER/BROWSER
+↓
+NEXT.JS + TYPESCRIPT
+↓
+PYTHON BACKEND API
+↓
+SUPABASE / POSTGRESQL
+
+### Next.js responsibilities
+
+* UI
+* routing
+* rendering
+* frontend state
+* user interaction
+* presentation logic
+* browser validation
+* authentication state
+* responsive UX
+* accessibility
+* API communication
+
+### Python responsibilities
+
+* business logic
+* queue logic
+* ETA calculation
+* capacity calculation
+* authorization decisions
+* payment verification
+* order processing
+* inventory rules
+* operational rules
+* protected operations
+* background processing
+* analytics services
+* ML inference where applicable
+
+### Supabase/PostgreSQL responsibilities
+
+* persistent data
+* relational integrity
+* constraints
+* indexes
+* transactions
+* migrations
+* RLS where appropriate
+* database functions/triggers where justified
+
+Do not allow Next.js to become a second authoritative backend.
+
+---
+
+# 10. REPOSITORY FORENSIC AUDIT
+
+Before significant implementation:
+
+1. Inspect the complete directory structure.
+2. Inspect package manifests.
+3. Inspect lock files.
+4. Inspect Next.js configuration.
+5. Inspect TypeScript configuration.
+6. Inspect Python configuration.
+7. Inspect backend structure.
+8. Inspect database schema.
+9. Inspect migrations.
+10. Inspect environment configuration.
+11. Inspect existing authentication.
+12. Inspect existing UI.
+13. Inspect API routes.
+14. Inspect tests.
+15. Inspect documentation.
+16. Inspect deployment configuration.
+17. Run the existing project where possible.
+18. Identify what works.
+19. Identify what is partial.
+20. Identify what is broken.
+21. Identify what is missing.
+22. Identify what must be preserved.
+
+Create internally:
+
+CURRENT STATE
+→ TARGET STATE
+→ GAP MATRIX
+
+Do not blindly rewrite working functionality.
+
+---
+
+# 11. FUNCTIONAL REQUIREMENTS
+
+## P0 — Core
+
+### Authentication
+
+Support appropriate authentication for:
+
+* student
+* kitchen staff
+* administrator
+
+Never trust frontend-provided roles.
+
+### Menu
+
+* menu categories
+* item name
+* description
+* price
+* availability
+* preparation time
+* stock status
+
+### Ordering
+
+* add to cart
+* update quantity
+* remove item
+* calculate total
+* place order
+* order confirmation
+* order history
+
+### Queue
+
+Every confirmed order must have a queue state.
+
+Support:
+
+* queue position
+* orders ahead
+* waiting time
+* preparation status
+* priority
+* aging/fairness
+
+### Order lifecycle
+
+Use a well-defined state machine.
+
+Possible states:
+
+CREATED
+→ PAYMENT_PENDING
+→ CONFIRMED
+→ QUEUED
+→ ACCEPTED
+→ PREPARING
+→ READY
+→ PICKED_UP
+
+Also support appropriate failure/cancellation states.
+
+### Payment
+
+Implement reliable payment-state handling.
+
+### Pickup
+
+Generate a secure pickup mechanism.
+
+QR should be:
+
+* tied to the order
+* difficult to reuse
+* validated server-side
+* invalid after successful pickup
+
+---
+
+# 12. DYNAMIC ETA ENGINE
+
+Implement an initial deterministic ETA engine.
+
+ETA should consider at least:
+
+* current queued workload
+* preparation time
+* number of active orders
+* kitchen capacity
+* order position
+* item complexity where available
+
+Conceptually:
+
+ETA ≈ current workload / active preparation capacity + new order preparation requirement
+
+Do not claim this is mathematically perfect.
+
+Design it so the algorithm can later be replaced with an ML model.
+
+The frontend must display:
+
+* current position
+* estimated preparation time
+* estimated ready time
+* current kitchen workload
+
+---
+
+# 13. QUEUE OPTIMIZATION
+
+Do not blindly use FIFO for every operational decision.
+
+Implement a fair priority mechanism that can consider:
+
+* waiting time
+* preparation complexity
+* pickup deadline
+* order age
+* operational urgency
+
+Use an aging mechanism so older orders cannot be indefinitely starved.
+
+The algorithm must be documented.
+
+The system must preserve operational fairness.
+
+---
+
+# 14. DYNAMIC PICKUP CAPACITY
+
+Pickup slots should have:
+
+* start time
+* end time
+* capacity
+* booked count
+* status
+
+Possible states:
+
+AVAILABLE
+BUSY
+FULL
+CLOSED
+
+Capacity should be influenced by actual operational conditions where appropriate.
+
+Do not create unlimited theoretical slots.
+
+---
+
+# 15. PEAK-HOUR MANAGEMENT
+
+Detect:
+
+NORMAL
+BUSY
+HIGH
+CRITICAL
+
+based on measurable operational signals.
+
+Signals may include:
+
+* active order count
+* orders/minute
+* kitchen workload
+* queue length
+* available pickup capacity
+* predicted demand
+
+During high load, the system may:
+
+* recommend later slots
+* throttle order admission
+* show expected delays
+* adjust available pickup capacity
+* alert staff
+
+Do not automatically reject orders without a clearly defined business rule.
+
+---
+
+# 16. INVENTORY MANAGEMENT
+
+When an order is confirmed, inventory must be updated safely.
+
+Prevent overselling.
+
+Example:
+
+5 samosas remaining.
+
+Two simultaneous users must not both be allowed to purchase all 5 unless the database transaction logic safely handles the reservation.
+
+Use:
+
+* transactions
+* atomic updates
+* constraints
+* appropriate locking/concurrency strategies
+
+where necessary.
+
+---
+
+# 17. PAYMENT RELIABILITY
+
+Implement:
+
+* payment initiation
+* payment verification
+* payment status
+* failed payment handling
+* pending payment handling
+* cancellation
+* refund state if applicable
+* webhook/event handling where supported
+* idempotency
+
+Never expose payment secrets to frontend code.
+
+Never hardcode credentials.
+
+Use environment variables.
+
+---
+
+# 18. REAL-TIME KITCHEN DISPLAY
+
+Create a Kitchen Display System.
+
+It should show:
+
+* new orders
+* queued orders
+* priority
+* preparation status
+* elapsed waiting time
+* estimated preparation time
+* ready orders
+
+Staff should be able to transition:
+
+QUEUED
+→ PREPARING
+→ READY
+
+The student interface must update in real time.
+
+---
+
+# 19. ADMIN DASHBOARD
+
+Provide operational metrics such as:
+
+* active orders
+* preparing orders
+* ready orders
+* completed orders
+* current queue
+* average ETA
+* kitchen utilization
+* peak period
+* revenue
+* payment failures
+* inventory alerts
+* most ordered items
+* average preparation time
+
+Avoid decorative analytics with no operational value.
+
+---
+
+# 20. AI/ML COMPONENT
+
+AI/ML is OPTIONAL for the MVP but recommended as an advanced feature.
+
+If implemented, use it for a meaningful problem.
+
+Recommended:
+
+## Demand forecasting
+
+Predict expected orders for:
+
+* next 15 minutes
+* next 30 minutes
+* next hour
+* future peak period
+
+Potential features:
+
+* day
+* time
+* historical order volume
+* food item
+* weekday/weekend
+* holiday
+* college event
+* break period
+
+Do not claim AI reduces queues unless actual evaluation proves improvement.
+
+Compare baseline versus ML-assisted behavior.
+
+---
+
+# 21. RECOMMENDED DATABASE MODEL
+
+Inspect existing schema first.
+
+If missing, consider entities such as:
+
+USERS
+
+MENU_ITEMS
+
+CATEGORIES
+
+ORDERS
+
+ORDER_ITEMS
+
+QUEUE_ENTRIES
+
+PICKUP_SLOTS
+
+PAYMENTS
+
+INVENTORY
+
+INVENTORY_TRANSACTIONS
+
+NOTIFICATIONS
+
+FEEDBACK
+
+KITCHEN_STATUS
+
+AUDIT_LOGS
+
+Do not create tables unnecessarily.
+
+Normalize appropriately.
+
+Use:
+
+* primary keys
+* foreign keys
+* unique constraints
+* check constraints
+* indexes
+* timestamps
+* audit fields where needed
+
+---
+
+# 22. API CONTRACT
+
+Maintain a clear contract:
+
+NEXT.JS
+↕
+PYTHON API
+↕
+SUPABASE
+
+Potential API areas:
+
+/auth
+/menu
+/orders
+/orders/{id}
+/queue
+/pickup-slots
+/payments
+/inventory
+/kitchen
+/admin
+/analytics
+/notifications
+
+Do not invent endpoints before inspecting the repository.
+
+Every endpoint must define:
+
+* HTTP method
+* authentication requirement
+* authorization
+* request schema
+* response schema
+* status codes
+* errors
+* pagination/filtering where relevant
+
+Avoid duplicated business rules between frontend and backend.
+
+---
+
+# 23. SECURITY
+
+Perform a security audit covering:
+
+* authentication
+* authorization
+* RBAC
+* sessions
+* tokens
+* secrets
+* environment variables
+* CORS
+* CSRF where applicable
+* XSS
+* SQL injection
+* IDOR
+* privilege escalation
+* rate limiting
+* sensitive logs
+* payment security
+* QR abuse
+* Supabase RLS
+* database permissions
+
+Never expose privileged Supabase credentials in browser code.
+
+Never trust:
+
+* frontend role
+* frontend user ID
+* frontend price
+* frontend payment success
+* frontend order ownership
+
+The backend must verify them.
+
+---
+
+# 24. UX/UI REQUIREMENTS
+
+The system must be:
+
+* responsive
+* mobile-first
+* usable on student phones
+* accessible
+* simple during peak periods
+* visually clear
+
+Every important workflow must have:
+
+* loading state
+* error state
+* empty state
+* success state
+* disabled state where appropriate
+
+Avoid:
+
+* fake buttons
+* dead links
+* placeholder interactions
+* excessive animation
+* unnecessary complexity
+* inconsistent design
+
+Prioritize speed because students will use the system during short college breaks.
+
+---
+
+# 25. CRITICAL USER JOURNEY
+
+Validate this end-to-end:
+
+Student logs in
+↓
+Views menu
+↓
+Selects food
+↓
+Adds to cart
+↓
+Checks availability
+↓
+Chooses pickup slot
+↓
+Pays
+↓
+Backend verifies payment
+↓
+Order confirmed
+↓
+Queue position generated
+↓
+Kitchen receives order
+↓
+Kitchen prepares order
+↓
+ETA updates
+↓
+Student receives live status
+↓
+Order becomes READY
+↓
+Student receives notification
+↓
+Student displays QR
+↓
+Staff scans/verifies QR
+↓
+Order marked PICKED_UP
+
+This complete workflow must work in the final system.
+
+---
+
+# 26. IMPORTANT CONCURRENCY TESTS
+
+Explicitly test:
+
+1. Two users purchasing the last item simultaneously.
+2. Two payment callbacks for the same order.
+3. Double-clicking payment.
+4. Duplicate order submission.
+5. Two staff members updating the same order.
+6. Pickup QR being scanned twice.
+7. Pickup QR being used by another user.
+8. Pickup slot becoming full while users are ordering.
+9. Kitchen workload changing during ETA calculation.
+10. Multiple orders entering during a peak burst.
+
+These tests are essential.
+
+---
+
+# 27. PERFORMANCE
+
+Measure rather than invent.
+
+Evaluate:
+
+* API response time
+* database query performance
+* queue update latency
+* WebSocket update behavior
+* concurrent order handling
+* frontend responsiveness
+* page loading
+* database indexes
+* unnecessary requests
+
+Do not report performance numbers unless actually measured.
+
+---
+
+# 28. OBSERVABILITY
+
+Implement proportionate observability:
+
+* structured logs
+* request logs
+* error logging
+* health endpoint
+* backend status
+* important business-event logs
+* payment failure logs
+* order lifecycle logs
+
+Do not log:
+
+* passwords
+* payment secrets
+* sensitive authentication tokens
+* unnecessary personal data
+
+---
+
+# 29. TESTING STRATEGY
+
+## Frontend
+
+Use appropriate:
+
+* component tests
+* integration tests
+* E2E tests
+
+## Backend
+
+Use:
+
+* unit tests
+* API tests
+* integration tests
+
+## Database
+
+Validate:
+
+* migrations
+* constraints
+* relationships
+* RLS
+* transaction behavior
+
+## E2E
+
+Test:
+
+BROWSER
+→ NEXT.JS
+→ PYTHON
+→ SUPABASE
+→ PYTHON
+→ NEXT.JS
+→ USER
+
+for critical workflows.
+
+---
+
+# 30. PROJECT EVALUATION METRICS
+
+The project must be evaluated using measurable KPIs.
+
+## Queue
+
+* average queue length
+* maximum queue length
+* average waiting time
+
+## Ordering
+
+* average order completion time
+* orders/hour
+* order failure rate
+
+## Kitchen
+
+* average preparation time
+* kitchen utilization
+* delayed orders
+
+## Pickup
+
+* average pickup waiting time
+* pickup throughput
+* QR verification success rate
+
+## Payments
+
+* payment success rate
+* payment failure rate
+* duplicate-payment prevention
+
+## Inventory
+
+* stock-out frequency
+* overselling incidents
+* waste where measurable
+
+## System
+
+* API latency
+* real-time update latency
+* error rate
+
+Where possible, compare:
+
+BASELINE
+vs
+SYSTEM
+
+to demonstrate actual improvement.
+
+---
+
+# 31. RESEARCH-BASED FEATURE PRIORITIZATION
+
+Prioritize features that convert known limitations of existing systems into concrete benefits.
+
+Existing online ordering
+→ add real-time queue intelligence
+
+Digital token
+→ add live position + ETA
+
+Fixed pickup
+→ dynamic capacity-aware pickup slots
+
+Basic order tracking
+→ continuously updated operational ETA
+
+Manual payment
+→ verified digital payment state machine
+
+Manual inventory
+→ transactional inventory management
+
+Basic analytics
+→ operational bottleneck analytics
+
+Static ordering
+→ peak-load control
+
+Basic FIFO
+→ fair priority queue with aging
+
+Basic notifications
+→ actionable ETA and delay notifications
+
+---
+
+# 32. IMPLEMENTATION PHASES
+
+## Phase 0 — Repository audit
+
+Do not modify major code.
+
+Understand the current state.
+
+## Phase 1 — Architecture and database
+
+Implement:
+
+* schema
+* migrations
+* constraints
+* indexes
+* roles
+* core entities
+
+## Phase 2 — Python backend
+
+Implement:
+
+* authentication integration
+* authorization
+* menu
+* orders
+* queue
+* payments
+* inventory
+* pickup
+* business logic
+
+## Phase 3 — Next.js frontend
+
+Implement:
+
+* student UI
+* kitchen UI
+* admin UI
+* responsive design
+
+## Phase 4 — Real-time
+
+Implement:
+
+* live order status
+* queue updates
+* kitchen updates
+* ETA updates
+* notifications
+
+## Phase 5 — Payment + QR
+
+Implement and validate:
+
+* payment lifecycle
+* webhook/verification
+* idempotency
+* QR pickup
+
+## Phase 6 — Queue intelligence
+
+Implement:
+
+* queue priority
+* aging
+* dynamic ETA
+* pickup capacity
+* peak detection
+
+## Phase 7 — Analytics
+
+Implement:
+
+* operational dashboard
+* KPIs
+* reports
+
+## Phase 8 — Optional ML
+
+Implement:
+
+* demand prediction
+* peak prediction
+* preparation/delay prediction if justified
+
+## Phase 9 — Security and performance
+
+Perform full audit.
+
+## Phase 10 — Final validation
+
+Run complete E2E testing.
+
+---
+
+# 33. MULTI-AGENT ORCHESTRATION
+
+If the coding environment supports subagents, use them only when tasks are genuinely independent.
+
+Possible agents:
+
+### Architecture Agent
+
+Own:
+
+* system architecture
+* dependency graph
+* design decisions
+
+### Database Agent
+
+Own:
+
+* Supabase
+* PostgreSQL
+* migrations
+* constraints
+* RLS
+
+### Python Agent
+
+Own:
+
+* APIs
+* services
+* queue logic
+* payment logic
+* business rules
+
+### Next.js Agent
+
+Own:
+
+* student UI
+* kitchen UI
+* admin UI
+
+### Real-Time Agent
+
+Own:
+
+* WebSockets
+* event propagation
+* live queue updates
+
+### Security Agent
+
+Own:
+
+* authentication
+* authorization
+* RLS
+* payment security
+* threat review
+
+### QA Agent
+
+Own:
+
+* test strategy
+* automated tests
+* E2E testing
+* regression
+
+### ML Agent
+
+Own only:
+
+* demand forecasting
+* evaluation
+* model integration
+
+The primary agent remains responsible for integration.
+
+Never allow multiple agents to simultaneously modify critical shared files without coordination.
+
+---
+
+# 34. FAILURE RECOVERY
+
+When something fails:
+
+1. Capture the exact failure.
+2. Reproduce it.
+3. Identify root cause.
+4. Inspect related dependencies.
+5. Implement the smallest correct fix.
+6. Re-run the failing test.
+7. Run regression tests.
+8. Continue.
+
+Never:
+
+* suppress errors
+* disable tests
+* bypass authorization
+* weaken security
+* replace functionality with fake responses
+* mark broken functionality as complete
+
+---
+
+# 35. STOP / ASK CONDITIONS
+
+Continue autonomously when a reasonable reversible engineering decision can be made.
+
+Ask the user only when:
+
+* a critical requirement is genuinely ambiguous
+* destructive irreversible action is required
+* production credentials are needed
+* major architecture cannot safely be inferred
+* requirements conflict materially
+* legal/compliance constraints affect implementation
+* proceeding would create significant irreversible risk
+
+For low-risk ambiguity:
+
+choose a reasonable reversible solution and continue.
+
+---
+
+# 36. DOCUMENTATION
+
+Maintain documentation describing what actually exists.
+
+Include:
+
+* README
+* architecture
+* setup
+* environment variables
+* database
+* migrations
+* API
+* authentication
+* deployment
+* testing
+* troubleshooting
+
+Create `.env.example` where appropriate.
+
+Never document imaginary functionality.
+
+---
+
+# 37. FINAL FORENSIC AUDIT
+
+Before completion verify:
+
+## Product
+
+* all P0 requirements
+* all P1 requirements
+* user roles
+* business rules
+* critical workflows
+
+## Frontend
+
+* routes
+* UI
+* responsiveness
+* accessibility
+* TypeScript
+* API integration
+* loading/error/empty states
+
+## Backend
+
+* APIs
+* business logic
+* queue engine
+* ETA
+* payment verification
+* validation
+* authorization
+* error handling
+
+## Database
+
+* schema
+* migrations
+* relationships
+* constraints
+* indexes
+* transactions
+* RLS
+* permissions
+
+## Integration
+
+Verify:
+
+NEXT.JS ↔ PYTHON ↔ SUPABASE
+
+for every critical workflow.
+
+## Security
+
+Verify:
+
+* secrets
+* authentication
+* authorization
+* payment handling
+* QR security
+* database security
+
+## Testing
+
+Run actual tests.
+
+## Build
+
+Run actual production build.
+
+## Runtime
+
+Run the application and verify actual behavior.
+
+---
+
+# 38. REQUIREMENT EVIDENCE MATRIX
+
+Produce an evidence matrix:
+
+| Requirement       | Implementation   | Validation        | Evidence    | Result    |
+| ----------------- | ---------------- | ----------------- | ----------- | --------- |
+| Online ordering   | module/API       | E2E test          | test output | PASS/FAIL |
+| Queue management  | queue service    | integration test  | result      | PASS/FAIL |
+| Dynamic ETA       | ETA service      | algorithm test    | result      | PASS/FAIL |
+| Payment           | payment service  | payment test      | result      | PASS/FAIL |
+| Pickup QR         | pickup module    | security/E2E test | result      | PASS/FAIL |
+| Inventory         | database/service | concurrency test  | result      | PASS/FAIL |
+| Peak management   | capacity engine  | load test         | result      | PASS/FAIL |
+| Real-time updates | WebSocket layer  | E2E test          | result      | PASS/FAIL |
+
+Every P0/P1 requirement must have evidence.
+
+---
+
+# 39. DEFINITION OF DONE
+
+Do not declare:
+
+"The project is complete."
+
+unless evidence supports it.
+
+Completion requires:
+
+IMPLEMENTED
+
+* INTEGRATED
+* TESTED
+* VERIFIED
+
+The project is not complete merely because:
+
+* the UI renders
+* APIs exist
+* database tables exist
+* tests were written
+* application starts
+
+Critical functionality requires executed evidence.
+
+---
+
+# 40. FINAL PROJECT REPORT
+
+At completion provide:
+
+## COMPLETED
+
+What was actually implemented.
+
+## CHANGED
+
+Important files/modules changed.
+
+## VERIFIED
+
+Tests, builds and runtime checks actually executed.
+
+## ARCHITECTURE
+
+Important architectural decisions.
+
+## SECURITY
+
+Security controls verified.
+
+## PERFORMANCE
+
+Measured results where available.
+
+## REMAINING
+
+Only genuinely incomplete work.
+
+## RISKS
+
+Known technical/product risks.
+
+## COMMANDS
+
+Important setup/test/build commands.
+
+## EVIDENCE
+
+Actual validation results.
+
+---
+
+# 41. FINAL TECHNICAL POSITIONING
+
+The finished project should be presented as:
+
+> A campus-focused intelligent canteen orchestration platform that combines online ordering, digital payment, real-time queue management, dynamic pickup scheduling, live ETA estimation, kitchen workload monitoring, inventory-aware ordering, QR-based pickup verification and peak-demand management.
+
+The primary engineering contribution is not "online food ordering."
+
+The contribution is:
+
+# REAL-TIME CAPACITY-AWARE QUEUE AND ORDER ORCHESTRATION
+
+The system should continuously transform:
+
+ORDER DEMAND
+→ CAPACITY
+→ QUEUE
+→ KITCHEN WORKLOAD
+→ ETA
+→ PICKUP
+→ PERFORMANCE DATA
+
+and use the resulting information to improve subsequent decisions.
+
+---
+
+# 42. FINAL INSTRUCTION
+
+Do not stop after producing an architecture document.
+
+Do not stop after producing a database.
+
+Do not stop after producing UI.
+
+Do not stop after producing APIs.
+
+Do not stop after writing tests.
+
+Actually execute the implementation workflow.
+
+Use:
+
+INSPECT
+→ PLAN
+→ IMPLEMENT
+→ TEST
+→ DEBUG
+→ INTEGRATE
+→ HARDEN
+→ VERIFY
+
+Preserve working repository functionality.
+
+Do not blindly rewrite.
+
+Do not invent missing requirements.
+
+Do not introduce unnecessary technologies.
+
+Do not make unsupported novelty claims.
+
+Do not claim performance improvements without measurements.
+
+Do not declare success prematurely.
+
+The final system must be a technically coherent, practically deployable, secure, tested and demonstrably useful campus canteen platform.
+
+# START NOW
+
+First inspect the repository and reconstruct the current state.
+
+Then create the CURRENT STATE → TARGET STATE → GAP MATRIX.
+
+Then implement the highest-priority missing functionality in dependency order.
+
+Continue autonomously until all safely inferable P0/P1 requirements are implemented and verified.
